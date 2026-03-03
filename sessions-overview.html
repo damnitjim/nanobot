@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Management in Nanobot</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #faf9f8;
+      --surface: #ffffff;
+      --surface-alt: #f5f4f2;
+      --border: rgba(0, 0, 0, 0.08);
+      --text: #1a1815;
+      --text-dim: #726b62;
+      --accent-primary: #0c5a5a;
+      --accent-primary-dim: rgba(12, 90, 90, 0.08);
+      --accent-secondary: #a85c1c;
+      --accent-secondary-dim: rgba(168, 92, 28, 0.08);
+      --accent-tertiary: #5a4a2d;
+      --accent-tertiary-dim: rgba(90, 74, 45, 0.08);
+      --fg-success: #2d7a4a;
+      --fg-warning: #b85c0c;
+      --fg-error: #a83a3a;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1815;
+        --surface: #2a2620;
+        --surface-alt: #323026;
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #f5f4f2;
+        --text-dim: #b0a89a;
+        --accent-primary: #4db8b8;
+        --accent-primary-dim: rgba(77, 184, 184, 0.12);
+        --accent-secondary: #d9a864;
+        --accent-secondary-dim: rgba(217, 168, 100, 0.12);
+        --accent-tertiary: #c9b896;
+        --accent-tertiary-dim: rgba(201, 184, 150, 0.12);
+        --fg-success: #6cd977;
+        --fg-warning: #f5a844;
+        --fg-error: #f56565;
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background-color: var(--bg);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      margin-top: 2rem;
+      color: var(--accent-primary);
+    }
+
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      margin-bottom: 3rem;
+      border-bottom: 2px solid var(--accent-primary);
+      padding-bottom: 2rem;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .card--elevated {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-alt) 100%);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .card--primary {
+      border-left: 4px solid var(--accent-primary);
+      background: var(--accent-primary-dim);
+    }
+
+    .card--secondary {
+      border-left: 4px solid var(--accent-secondary);
+      background: var(--accent-secondary-dim);
+    }
+
+    .card--tertiary {
+      border-left: 4px solid var(--accent-tertiary);
+      background: var(--accent-tertiary-dim);
+    }
+
+    /* Code */
+    code {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.9em;
+      background: var(--surface-alt);
+      padding: 0.2em 0.5em;
+      border-radius: 4px;
+      color: var(--accent-secondary);
+    }
+
+    pre {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.85em;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    /* Diagram sections */
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      margin: 2rem 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem 1rem;
+      overflow-x: auto;
+    }
+
+    .mermaid-controls {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      z-index: 10;
+    }
+
+    .mermaid-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      transition: all 0.2s ease;
+    }
+
+    .mermaid-btn:hover {
+      background: var(--surface-alt);
+      color: var(--text);
+      border-color: var(--accent-primary);
+    }
+
+    /* Flow diagrams */
+    .flow-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+      margin: 2rem 0;
+    }
+
+    @media (max-width: 900px) {
+      .flow-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .flow-item {
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .flow-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 8px;
+      height: 8px;
+      background: var(--accent-primary);
+      border-radius: 50%;
+      border: 2px solid var(--surface);
+    }
+
+    .flow-item--secondary::before {
+      background: var(--accent-secondary);
+    }
+
+    .flow-item--tertiary::before {
+      background: var(--accent-tertiary);
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    thead {
+      background: var(--surface-alt);
+      border-bottom: 2px solid var(--border);
+      position: sticky;
+      top: 0;
+    }
+
+    th {
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--accent-primary);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:nth-child(even) {
+      background: var(--accent-primary-dim);
+    }
+
+    /* Badges and labels */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      font-family: "IBM Plex Mono", monospace;
+    }
+
+    .badge--primary {
+      background: var(--accent-primary-dim);
+      color: var(--accent-primary);
+      border: 1px solid var(--accent-primary);
+    }
+
+    .badge--secondary {
+      background: var(--accent-secondary-dim);
+      color: var(--accent-secondary);
+      border: 1px solid var(--accent-secondary);
+    }
+
+    .badge--success {
+      background: rgba(45, 122, 74, 0.12);
+      color: var(--fg-success);
+      border: 1px solid var(--fg-success);
+    }
+
+    /* Lists */
+    ul {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+      line-height: 1.7;
+    }
+
+    /* Grid layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Highlight boxes */
+    .highlight {
+      background: var(--accent-primary-dim);
+      border-left: 4px solid var(--accent-primary);
+      padding: 1rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+
+    .highlight--secondary {
+      background: var(--accent-secondary-dim);
+      border-left-color: var(--accent-secondary);
+    }
+
+    /* Mermaid theming */
+    .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Navigation */
+    nav {
+      position: sticky;
+      top: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      z-index: 100;
+      margin-bottom: 2rem;
+    }
+
+    nav ul {
+      list-style: none;
+      margin: 0;
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--text-dim);
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    nav a:hover {
+      color: var(--accent-primary);
+    }
+
+    /* Animation */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card, .section {
+      animation: fadeUp 0.6s ease-out forwards;
+      animation-delay: calc(var(--index, 0) * 0.1s);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1>Session Management in Nanobot</h1>
+      <p class="subtitle">Understanding conversation persistence, memory consolidation, and history management</p>
+    </header>
+
+    <!-- Overview Section -->
+    <section class="section" style="--index: 0">
+      <h2>What is a Session?</h2>
+      <div class="card card--primary">
+        <p>A <strong>session</strong> is a persistent conversation context that tracks all messages exchanged between a user and the agent within a specific channel and chat. Sessions enable multi-turn conversations where the agent remembers previous interactions and can reference past context.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card" style="--index: 1">
+          <h3>Session Identification</h3>
+          <p>Sessions are uniquely identified by a <code>session_key</code> in the format:</p>
+          <pre><code>"channel:chat_id"</code></pre>
+          <p>Example: <code>slack:user-1234</code> or <code>discord:channel-5678</code></p>
+        </div>
+        <div class="card" style="--index: 2">
+          <h3>Data Persistence</h3>
+          <p>Sessions are stored as JSONL files in the <code>sessions/</code> directory within the workspace:</p>
+          <pre><code>workspace/sessions/{safe_key}.jsonl</code></pre>
+          <p>Each line is a JSON object (message or metadata).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Session Lifecycle Flow -->
+    <section class="section" style="--index: 3">
+      <h2>Session Lifecycle</h2>
+      <div class="mermaid-wrap">
+        <div class="mermaid-controls">
+          <button class="mermaid-btn" onclick="zoomMermaid('session-lifecycle', 1.2)">+</button>
+          <button class="mermaid-btn" onclick="zoomMermaid('session-lifecycle', 0.8)">−</button>
+          <button class="mermaid-btn" onclick="resetMermaid('session-lifecycle')">Reset</button>
+        </div>
+        <div class="mermaid" id="session-lifecycle">
+graph TD
+  A["👤 User Sends Message<br/>(InboundMessage)"] --> B["🔍 Extract Session Key<br/>channel:chat_id"]
+  B --> C["📋 Get or Create<br/>SessionManager.get_or_create"]
+  C --> D{"Session<br/>Exists?"}
+  D -->|No| E["✨ Create New Session<br/>Empty message list"]
+  D -->|Yes| F["📖 Load from Disk<br/>JSONL file"]
+  E --> G["💾 Cache in Memory<br/>for fast access"]
+  F --> G
+  G --> H["📖 Retrieve History<br/>get_history max_messages"]
+  H --> I["🤖 Run Agent Loop<br/>Build context, call LLM"]
+  I --> J["💬 Execute Tools<br/>if needed"]
+  J --> K["✅ Generate Response"]
+  K --> L["💾 Save Messages<br/>Append to session.messages"]
+  L --> M["🔄 Persist to Disk<br/>session.save"]
+  M --> N["📤 Publish Response<br/>OutboundMessage"]
+  N --> O["⏹ Session Ready<br/>for next message"]
+
+  style A fill:#e8f5f5
+  style B fill:#e8f5f5
+  style C fill:#e8f5f5
+  style D fill:#fff4e6
+  style E fill:#f0e6ff
+  style F fill:#f0e6ff
+  style G fill:#e8f5f5
+  style H fill:#e8f5f5
+  style I fill:#fff0f0
+  style J fill:#fff0f0
+  style K fill:#fff0f0
+  style L fill:#e8f5f5
+  style M fill:#e8f5f5
+  style N fill:#e8f5f5
+  style O fill:#e8f5f5
+        </div>
+      </div>
+    </section>
+
+    <!-- Detailed Components -->
+    <section class="section" style="--index: 4">
+      <h2>Core Components</h2>
+
+      <div class="card card--primary" style="--index: 5">
+        <h3>Session Data Structure</h3>
+        <p>Each session is represented by a dataclass with:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>key</code></td>
+              <td>str</td>
+              <td>Unique identifier (channel:chat_id)</td>
+            </tr>
+            <tr>
+              <td><code>messages</code></td>
+              <td>list[dict]</td>
+              <td>Append-only conversation history</td>
+            </tr>
+            <tr>
+              <td><code>created_at</code></td>
+              <td>datetime</td>
+              <td>Session creation timestamp</td>
+            </tr>
+            <tr>
+              <td><code>updated_at</code></td>
+              <td>datetime</td>
+              <td>Last update timestamp</td>
+            </tr>
+            <tr>
+              <td><code>metadata</code></td>
+              <td>dict</td>
+              <td>Custom session metadata</td>
+            </tr>
+            <tr>
+              <td><code>last_consolidated</code></td>
+              <td>int</td>
+              <td>Number of messages consolidated to memory files</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid-2">
+        <div class="card card--secondary" style="--index: 6">
+          <h3>SessionManager</h3>
+          <p>Manages the lifecycle of all sessions:</p>
+          <ul>
+            <li><strong>Cache:</strong> In-memory dictionary for fast lookup</li>
+            <li><strong>Persistence:</strong> Load/save to JSONL files</li>
+            <li><strong>Legacy support:</strong> Migrate sessions from ~/.nanobot/</li>
+            <li><strong>Discovery:</strong> List all available sessions</li>
+          </ul>
+        </div>
+
+        <div class="card card--tertiary" style="--index: 7">
+          <h3>Message History</h3>
+          <p><code>get_history(max_messages=N)</code> returns unconsolidated messages:</p>
+          <ul>
+            <li>Latest N messages from session</li>
+            <li>Aligned to user turn (no orphaned tools)</li>
+            <li>Used as context for LLM</li>
+            <li>Never modifies original messages</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Message Flow Deep Dive -->
+    <section class="section" style="--index: 8">
+      <h2>Message Flow in Detail</h2>
+
+      <div class="card card--elevated" style="--index: 9">
+        <h3>Step-by-step: Processing a Message</h3>
+        <div class="flow-section">
+          <div class="flow-item flow-item--primary">
+            <h4>1. Receive &amp; Extract</h4>
+            <p>InboundMessage arrives from channel bus. Extract <code>channel</code> and <code>chat_id</code> to construct <code>session_key</code>.</p>
+          </div>
+          <div class="flow-item flow-item--secondary">
+            <h4>2. Get/Create Session</h4>
+            <p><code>SessionManager.get_or_create(key)</code> checks cache, then disk. Creates new Session if needed.</p>
+          </div>
+          <div class="flow-item flow-item--tertiary">
+            <h4>3. Check Commands</h4>
+            <p><code>/new</code> clears session after consolidating memory. <code>/help</code> returns command list.</p>
+          </div>
+          <div class="flow-item flow-item--primary">
+            <h4>4. Retrieve History</h4>
+            <p><code>session.get_history(max_messages=100)</code> fetches unconsolidated messages for context.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight highlight--secondary" style="--index: 10">
+        <strong>Important:</strong> The <code>get_history()</code> method returns unconsolidated messages only. Messages that have been archived to memory files (via consolidation) are not included, preventing duplication of summarized context.
+      </div>
+
+      <div class="flow-section" style="--index: 11">
+        <div class="flow-item flow-item--secondary">
+          <h4>5. Build Context</h4>
+          <p>ContextBuilder creates full message list with history + current message + system context.</p>
+        </div>
+        <div class="flow-item flow-item--tertiary">
+          <h4>6. Run Agent Loop</h4>
+          <p>LLM processes context, makes tool calls, generates response.</p>
+        </div>
+        <div class="flow-item flow-item--primary">
+          <h4>7. Save Messages</h4>
+          <p><code>_save_turn()</code> appends new messages to session, truncating large tool results.</p>
+        </div>
+        <div class="flow-item flow-item--secondary">
+          <h4>8. Persist Session</h4>
+          <p><code>SessionManager.save()</code> writes entire session to JSONL file on disk.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Memory Consolidation -->
+    <section class="section" style="--index: 12">
+      <h2>Memory Consolidation</h2>
+
+      <div class="card card--primary" style="--index: 13">
+        <h3>The Problem: Context Window Limits</h3>
+        <p>As conversations grow longer, the full message history becomes too large to fit in the LLM's context window. <strong>Memory consolidation</strong> solves this by archiving old messages to summary files while keeping the session lightweight.</p>
+      </div>
+
+      <div class="mermaid-wrap" style="--index: 14">
+        <div class="mermaid-controls">
+          <button class="mermaid-btn" onclick="zoomMermaid('consolidation-flow', 1.2)">+</button>
+          <button class="mermaid-btn" onclick="zoomMermaid('consolidation-flow', 0.8)">−</button>
+          <button class="mermaid-btn" onclick="resetMermaid('consolidation-flow')">Reset</button>
+        </div>
+        <div class="mermaid" id="consolidation-flow">
+graph TD
+  A["📈 Session Growing<br/>unconsolidated ≥ memory_window"] --> B["🔒 Acquire Lock<br/>per-session lock"]
+  B --> C["📸 Create Snapshot<br/>messages[last_consolidated:]"]
+  C --> D["🤖 Summarize with LLM<br/>Key points, decisions"]
+  D --> E["💾 Write to Files<br/>MEMORY.md, HISTORY.md"]
+  E --> F["✅ Update last_consolidated<br/>Move pointer forward"]
+  F --> G["📝 Messages List Unchanged<br/>Append-only preserved"]
+  G --> H["🎯 get_history() Still Works<br/>Returns recent unconsolidated"]
+
+  style A fill:#fff4e6
+  style B fill:#e8f5f5
+  style C fill:#e8f5f5
+  style D fill:#fff0f0
+  style E fill:#f0e6ff
+  style F fill:#f0e6ff
+  style G fill:#e8f5f5
+  style H fill:#e8f5f5
+        </div>
+      </div>
+
+      <div class="grid-2" style="--index: 15">
+        <div class="card">
+          <h3>Consolidation Triggers</h3>
+          <ul>
+            <li>Automatic: when <code>unconsolidated ≥ memory_window</code></li>
+            <li><code>/new</code> command: consolidate all before clearing</li>
+            <li>Runs async to avoid blocking message processing</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Key Principle: Append-Only</h3>
+          <p>Messages are <strong>never modified or deleted</strong>. Consolidation only updates the <code>last_consolidated</code> pointer, telling <code>get_history()</code> where to start reading.</p>
+        </div>
+      </div>
+
+      <div class="highlight highlight--secondary" style="--index: 16">
+        <strong>LLM Cache Efficiency:</strong> Because messages are append-only, the LLM's token cache (supported by OpenAI, Anthropic, etc.) remains valid. Resuming a conversation reuses the cached prompt tokens, saving cost and latency.
+      </div>
+    </section>
+
+    <!-- Context Injection -->
+    <section class="section" style="--index: 17">
+      <h2>Tool Context &amp; Routing</h2>
+
+      <p style="--index: 18">The agent loop calls <code>_set_tool_context()</code> at the start of message processing to inject routing information into tools that need it.</p>
+
+      <div class="card card--elevated" style="--index: 19">
+        <h3>Context-Aware Tools</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Tool</th>
+              <th>Context Used</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>MessageTool</code></td>
+              <td>channel, chat_id, message_id</td>
+              <td>Routes responses back to correct conversation thread</td>
+            </tr>
+            <tr>
+              <td><code>SpawnTool</code></td>
+              <td>channel, chat_id</td>
+              <td>Subagents inherit parent session/channel context</td>
+            </tr>
+            <tr>
+              <td><code>CronTool</code></td>
+              <td>channel, chat_id</td>
+              <td>Scheduled tasks reference their triggering context</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="--index: 20">This ensures that when tools execute, they know which conversation they're operating in and can send results back to the right place.</p>
+    </section>
+
+    <!-- JSONL Storage Format -->
+    <section class="section" style="--index: 21">
+      <h2>Storage: JSONL Format</h2>
+
+      <p style="--index: 22">Sessions are stored as JSONL (JSON Lines) files—one JSON object per line. This format is efficient, human-readable, and plays nicely with streaming and line-based tools.</p>
+
+      <div class="card card--secondary" style="--index: 23">
+        <h3>File Structure</h3>
+        <pre><code>{"_type":"metadata","key":"slack:user-123","created_at":"2024-01-15T10:30:00","updated_at":"2024-01-15T11:45:00","last_consolidated":12,"metadata":{}}
+{"role":"user","content":"What is nanobot?","timestamp":"2024-01-15T10:30:01"}
+{"role":"assistant","content":"Nanobot is an agentic system...","timestamp":"2024-01-15T10:30:05"}
+{"role":"user","content":"Can it handle long conversations?","timestamp":"2024-01-15T10:35:02"}
+{"role":"assistant","content":"Yes, through memory consolidation...","timestamp":"2024-01-15T10:35:06"}
+...</code></pre>
+      </div>
+
+      <div class="grid-2" style="--index: 24">
+        <div class="card">
+          <h3>Metadata Line</h3>
+          <p>First line contains session metadata with <code>_type: "metadata"</code> marker for easy parsing.</p>
+        </div>
+        <div class="card">
+          <h3>Message Lines</h3>
+          <p>Subsequent lines are messages with role, content, timestamp, and optional tool_calls or tool_call_id.</p>
+        </div>
+      </div>
+
+      <div class="highlight" style="--index: 25">
+        <strong>Safe Filenames:</strong> The session key is converted to a safe filename (colons replaced with underscores, special chars removed) to work reliably across filesystems.
+      </div>
+    </section>
+
+    <!-- Concurrency & Safety -->
+    <section class="section" style="--index: 26">
+      <h2>Concurrency &amp; Thread Safety</h2>
+
+      <div class="grid-2" style="--index: 27">
+        <div class="card card--primary">
+          <h3>Processing Lock</h3>
+          <p><code>_processing_lock</code> serializes all incoming messages globally, ensuring one message is processed at a time (no race conditions).</p>
+        </div>
+        <div class="card card--secondary">
+          <h3>Consolidation Locks</h3>
+          <p>Per-session locks prevent concurrent consolidation on the same session, but allow parallel consolidation across different sessions.</p>
+        </div>
+      </div>
+
+      <div class="card card--tertiary" style="--index: 28">
+        <h3>Active Tasks Tracking</h3>
+        <p><code>_active_tasks</code> maintains a mapping of session keys to their running asyncio tasks. This allows graceful cancellation via <code>/stop</code> command.</p>
+      </div>
+
+      <div class="highlight highlight--secondary" style="--index: 29">
+        <strong>Graceful Shutdown:</strong> When <code>/stop</code> is received, the agent cancels all active tasks for that session and waits for subagents to finish, ensuring clean termination.
+      </div>
+    </section>
+
+    <!-- Code Locations -->
+    <section class="section" style="--index: 30">
+      <h2>Code Reference</h2>
+
+      <div class="card card--elevated" style="--index: 31">
+        <h3>Key Methods in loop.py</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Line Range</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>_process_message()</code></td>
+              <td>330–453</td>
+              <td>Main message handler, session retrieval, loop execution</td>
+            </tr>
+            <tr>
+              <td><code>_set_tool_context()</code></td>
+              <td>155–160</td>
+              <td>Inject routing context into tools</td>
+            </tr>
+            <tr>
+              <td><code>_save_turn()</code></td>
+              <td>455–477</td>
+              <td>Append messages to session, truncate large results</td>
+            </tr>
+            <tr>
+              <td><code>_consolidate_memory()</code></td>
+              <td>479–484</td>
+              <td>Delegate consolidation to MemoryStore</td>
+            </tr>
+            <tr>
+              <td><code>_handle_stop()</code></td>
+              <td>278–292</td>
+              <td>Cancel active tasks for /stop command</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card card--primary" style="--index: 32">
+        <h3>SessionManager API (manager.py)</h3>
+        <ul>
+          <li><code>get_or_create(key)</code> — Get or create a session</li>
+          <li><code>save(session)</code> — Persist session to disk</li>
+          <li><code>invalidate(key)</code> — Remove from in-memory cache</li>
+          <li><code>list_sessions()</code> — Discover all sessions</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Summary -->
+    <section class="section" style="--index: 33">
+      <h2>Summary</h2>
+
+      <div class="grid-3" style="--index: 34">
+        <div class="card card--primary">
+          <h3>🔑 Identification</h3>
+          <p>Sessions are keyed by <code>channel:chat_id</code> and cached in memory for fast access.</p>
+        </div>
+        <div class="card card--secondary">
+          <h3>💾 Persistence</h3>
+          <p>Stored as JSONL files in <code>workspace/sessions/</code>, with append-only message lists.</p>
+        </div>
+        <div class="card card--tertiary">
+          <h3>🧠 Memory</h3>
+          <p>Consolidation archives old messages to summary files when conversation grows too long.</p>
+        </div>
+      </div>
+
+      <div class="highlight" style="--index: 35">
+        <strong>Core Design Principle:</strong> Sessions are immutable conversation records. New messages are always appended; old messages are never deleted or modified. This ensures LLM cache efficiency, easy auditing, and reliable history reconstruction.
+      </div>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+  <script>
+    // Initialize Mermaid
+    mermaid.initialize({ 
+      startOnLoad: true, 
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#e8f5f5',
+        primaryTextColor: '#1a1815',
+        primaryBorderColor: '#0c5a5a',
+        lineColor: '#0c5a5a',
+        secondBkgColor: '#f0e6ff',
+        tertiaryColor: '#fff4e6',
+        fontSize: '16px',
+      }
+    });
+
+    // Zoom functionality
+    let zoomLevels = {};
+
+    function zoomMermaid(id, factor) {
+      const container = document.getElementById(id);
+      if (!container) return;
+
+      zoomLevels[id] = (zoomLevels[id] || 1) * factor;
+      const svg = container.querySelector('svg');
+      if (svg) {
+        svg.style.transform = `scale(${zoomLevels[id]})`;
+        svg.style.transformOrigin = 'top center';
+      }
+    }
+
+    function resetMermaid(id) {
+      const container = document.getElementById(id);
+      if (!container) return;
+
+      zoomLevels[id] = 1;
+      const svg = container.querySelector('svg');
+      if (svg) {
+        svg.style.transform = 'scale(1)';
+      }
+    }
+
+    // Scroll to top on page load
+    window.addEventListener('load', () => {
+      document.querySelectorAll('.mermaid').forEach(el => {
+        const parent = el.closest('.mermaid-wrap');
+        if (parent) {
+          el.style.cursor = 'grab';
+          let isDragging = false;
+          let startX = 0;
+          let scrollStart = 0;
+
+          el.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX;
+            scrollStart = parent.scrollLeft;
+            el.style.cursor = 'grabbing';
+          });
+
+          document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const delta = e.clientX - startX;
+            parent.scrollLeft = scrollStart - delta;
+          });
+
+          document.addEventListener('mouseup', () => {
+            isDragging = false;
+            el.style.cursor = 'grab';
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

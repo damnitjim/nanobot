@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nanobot Provider System</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #fafaf9;
+      --surface: #ffffff;
+      --surface-alt: #f5f5f4;
+      --border: rgba(0, 0, 0, 0.08);
+      --text: #1c1917;
+      --text-dim: #78716b;
+      --accent-primary: #0891b2;
+      --accent-primary-dim: #ecf9fc;
+      --accent-secondary: #059669;
+      --accent-secondary-dim: #ecfdf5;
+      --accent-tertiary: #dc2626;
+      --accent-tertiary-dim: #fef2f2;
+      --accent-quaternary: #d97706;
+      --accent-quaternary-dim: #fffbeb;
+
+      --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1917;
+        --surface: #2d2625;
+        --surface-alt: #3e3935;
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #fafaf9;
+        --text-dim: #a8a29e;
+        --accent-primary: #06b6d4;
+        --accent-primary-dim: rgba(6, 182, 212, 0.15);
+        --accent-secondary: #10b981;
+        --accent-secondary-dim: rgba(16, 185, 129, 0.15);
+        --accent-tertiary: #f87171;
+        --accent-tertiary-dim: rgba(248, 113, 113, 0.15);
+        --accent-quaternary: #fbbf24;
+        --accent-quaternary-dim: rgba(251, 191, 36, 0.15);
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1, h2, h3, h4 {
+      margin: 1.5rem 0 0.75rem 0;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-top: 0;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      margin-top: 2rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    h3 {
+      font-size: 1.3rem;
+    }
+
+    p, li {
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .lead {
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      font-style: italic;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease-out both;
+    }
+
+    .card--primary {
+      background: var(--accent-primary-dim);
+      border-color: var(--accent-primary);
+    }
+
+    .card--secondary {
+      background: var(--accent-secondary-dim);
+      border-color: var(--accent-secondary);
+    }
+
+    .card--tertiary {
+      background: var(--accent-tertiary-dim);
+      border-color: var(--accent-tertiary);
+    }
+
+    .card--recessed {
+      background: var(--surface-alt);
+      border-color: transparent;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(1rem);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .grid--2 {
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    .grid--3 {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    code {
+      background: var(--surface-alt);
+      padding: 0.2em 0.4em;
+      border-radius: 0.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      color: var(--accent-primary);
+    }
+
+    .code-block {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+    }
+
+    .code-block code {
+      background: none;
+      padding: 0;
+      color: var(--text);
+    }
+
+    pre {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .label {
+      display: inline-block;
+      background: var(--accent-primary);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.25rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .label--secondary {
+      background: var(--accent-secondary);
+    }
+
+    .label--tertiary {
+      background: var(--accent-tertiary);
+    }
+
+    .label--quaternary {
+      background: var(--accent-quaternary);
+    }
+
+    .mermaid-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 2rem 0;
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    .mermaid {
+      width: 100%;
+    }
+
+    .zoom-controls {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+      z-index: 10;
+    }
+
+    .zoom-btn {
+      background: none;
+      border: none;
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--text-dim);
+      transition: color 0.2s;
+    }
+
+    .zoom-btn:hover {
+      color: var(--accent-primary);
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      color: var(--accent-primary);
+      margin-bottom: 1rem;
+    }
+
+    .section-label::before {
+      content: '';
+      display: inline-block;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: var(--accent-primary);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+
+    thead {
+      background: var(--surface-alt);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: var(--surface-alt);
+    }
+
+    ul, ol {
+      margin: 1rem 0 1rem 1.5rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-list {
+      list-style: none;
+      margin: 1rem 0;
+      padding: 0;
+    }
+
+    .feature-list li {
+      padding-left: 1.5rem;
+      position: relative;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    .example-pathway {
+      border-left: 4px solid var(--accent-primary);
+      padding-left: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    .example-pathway.secondary {
+      border-left-color: var(--accent-secondary);
+    }
+
+    .example-pathway.tertiary {
+      border-left-color: var(--accent-tertiary);
+    }
+
+    details {
+      margin: 1rem 0;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+      padding: 0.75rem;
+      user-select: none;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+      transition: background 0.2s;
+    }
+
+    summary:hover {
+      background: var(--accent-primary-dim);
+    }
+
+    details[open] summary {
+      background: var(--accent-primary-dim);
+    }
+
+    details[open] > *:not(summary) {
+      animation: fadeUp 0.3s ease-out;
+    }
+
+    .spec-table {
+      font-size: 0.95rem;
+    }
+
+    .spec-table td {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .status-badge.active {
+      background: var(--accent-secondary-dim);
+      color: var(--accent-secondary);
+    }
+
+    .status-badge.gateway {
+      background: var(--accent-primary-dim);
+      color: var(--accent-primary);
+    }
+
+    .status-badge.direct {
+      background: var(--accent-tertiary-dim);
+      color: var(--accent-tertiary);
+    }
+
+    .flow-step {
+      display: flex;
+      gap: 1rem;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: var(--surface-alt);
+      border-left: 4px solid var(--accent-primary);
+      border-radius: 0.25rem;
+    }
+
+    .flow-step__num {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      background: var(--accent-primary);
+      color: white;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .flow-step__content {
+      flex: 1;
+    }
+
+    .flow-step__content h4 {
+      margin: 0 0 0.5rem 0;
+    }
+
+    .flow-step__content p {
+      margin: 0;
+      color: var(--text-dim);
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+
+    @media (max-width: 768px) {
+      .comparison {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      h2 {
+        font-size: 1.4rem;
+      }
+
+      body {
+        padding: 1rem;
+      }
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 2rem 0;
+    }
+
+    .highlight {
+      background: var(--accent-quaternary-dim);
+      padding: 0.1em 0.3em;
+      border-radius: 0.2em;
+      color: var(--accent-quaternary);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔌 Nanobot Provider System</h1>
+    <p class="lead">Comprehensive guide to how LLM providers work in Nanobot, including architecture, pathways, and practical examples.</p>
+
+    <!-- Overview -->
+    <section>
+      <h2>Overview</h2>
+      <p>Providers are the abstraction layer that lets Nanobot work with <span class="highlight">any LLM API</span> — OpenAI, Anthropic, DeepSeek, custom endpoints, and more. The system automatically:</p>
+      <ul class="feature-list">
+        <li>Detects which provider you're using</li>
+        <li>Prefixes model names for LLM routing (e.g., <code>claude-opus</code> → <code>deepseek/claude-opus</code>)</li>
+        <li>Sets up environment variables</li>
+        <li>Routes requests through the right code path</li>
+        <li>Parses responses into a uniform format</li>
+      </ul>
+    </section>
+
+    <!-- Architecture Diagram -->
+    <section>
+      <h2>System Architecture</h2>
+      <div class="mermaid-wrap">
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="zoomMermaid(this.closest('.mermaid-wrap'), 0.8)">−</button>
+          <button class="zoom-btn" onclick="resetMermaid(this.closest('.mermaid-wrap'))">⊙</button>
+          <button class="zoom-btn" onclick="zoomMermaid(this.closest('.mermaid-wrap'), 1.2)">+</button>
+        </div>
+        <div class="mermaid" id="arch-diagram">
+graph TD
+    A["User Code<br/>(nanobot/agent/loop.py)"]
+    B["Provider Factory<br/>(find_gateway / find_by_model)"]
+    C["Provider Registry<br/>(PROVIDERS tuple)"]
+    D["LiteLLMProvider<br/>(default path)"]
+    E["CustomProvider<br/>(OpenAI-compatible)"]
+    F["OpenAICodexProvider<br/>(OAuth)"]
+    G["LLM Provider Base"]
+    H["LiteLLM<br/>(multi-provider SDK)"]
+    I["External APIs<br/>(OpenAI, Claude, etc.)"]
+    J["LLMResponse<br/>(unified format)"]
+
+    A -->|"which provider?"| B
+    B -->|"consult spec"| C
+    C -->|"is_direct?"| D
+    C -->|"is_direct=true?"| E
+    C -->|"is_oauth?"| F
+    D -->|"extends"| G
+    E -->|"extends"| G
+    F -->|"extends"| G
+    D -->|"uses"| H
+    E -->|"uses OpenAI SDK"| I
+    F -->|"custom parsing"| I
+    H -->|"calls"| I
+    D -->|"normalizes"| J
+    E -->|"normalizes"| J
+    F -->|"normalizes"| J
+
+    classDef user fill:#ecf9fc,stroke:#0891b2,stroke-width:2px
+    classDef factory fill:#ecfdf5,stroke:#059669,stroke-width:2px
+    classDef provider fill:#fef2f2,stroke:#dc2626,stroke-width:2px
+    classDef base fill:#fffbeb,stroke:#d97706,stroke-width:2px
+    classDef output fill:#f3e8ff,stroke:#a855f7,stroke-width:2px
+
+    class A user
+    class B,C factory
+    class D,E,F provider
+    class G base
+    class J output
+        </div>
+      </div>
+    </section>
+
+    <!-- Three Pathways -->
+    <section>
+      <h2>Three Provider Pathways</h2>
+      <p>Providers use one of three code paths. Each is built for a specific type of LLM API.</p>
+
+      <div class="grid grid--3">
+        <div class="card card--primary">
+          <h3>Pathway 1: LiteLLM (Default)</h3>
+          <p><span class="label">RECOMMENDED</span></p>
+          <p><strong>For:</strong> Any provider LiteLLM supports (OpenRouter, Anthropic, OpenAI, Gemini, DeepSeek, etc.)</p>
+          <p><strong>How:</strong> Just add a <code>ProviderSpec</code> to the registry — no class needed. LiteLLM handles model prefixing, env vars, and the OpenAI SDK.</p>
+          <p><strong>Effort:</strong> ~5 minutes (2 small edits)</p>
+          <p><strong>Examples:</strong> Anthropic, OpenAI, Gemini, DeepSeek, DashScope</p>
+        </div>
+
+        <div class="card card--secondary">
+          <h3>Pathway 2: CustomProvider</h3>
+          <p><span class="label label--secondary">DIRECT</span></p>
+          <p><strong>For:</strong> Self-hosted or custom OpenAI-compatible APIs (vLLM, LocalAI, Ollama)</p>
+          <p><strong>How:</strong> Uses OpenAI Python SDK directly, bypasses LiteLLM. Set <code>is_direct=True</code> in <code>ProviderSpec</code>.</p>
+          <p><strong>Effort:</strong> ~30 minutes (~56 lines of Python)</p>
+          <p><strong>Code:</strong> Simple request/response parsing</p>
+        </div>
+
+        <div class="card card--tertiary">
+          <h3>Pathway 3: Custom Class</h3>
+          <p><span class="label label--tertiary">ADVANCED</span></p>
+          <p><strong>For:</strong> Non-OpenAI-compatible APIs or custom auth (e.g., OpenAI Codex with OAuth)</p>
+          <p><strong>How:</strong> Extend <code>LLMProvider</code>, implement custom streaming/parsing/auth</p>
+          <p><strong>Effort:</strong> ~2 hours (~300+ lines of Python)</p>
+          <p><strong>Code:</strong> OAuth flow, SSE parsing, tool call formatting</p>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <h3>When to Choose Each</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Scenario</th>
+            <th>Choose</th>
+            <th>Why</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Provider is in LiteLLM's supported list</td>
+            <td><strong>Pathway 1</strong></td>
+            <td>It's the fastest and requires no custom code</td>
+          </tr>
+          <tr>
+            <td>Self-hosted, OpenAI-compatible endpoint</td>
+            <td><strong>Pathway 2</strong></td>
+            <td>CustomProvider is built for this — 56 lines, done</td>
+          </tr>
+          <tr>
+            <td>Non-standard auth (OAuth)</td>
+            <td><strong>Pathway 3</strong></td>
+            <td>Need full control over auth flow</td>
+          </tr>
+          <tr>
+            <td>Non-OpenAI response format</td>
+            <td><strong>Pathway 3</strong></td>
+            <td>Need custom parsing (tool calls, streaming format, etc.)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Provider Registry -->
+    <section>
+      <h2>Provider Registry (PROVIDERS Tuple)</h2>
+      <p>All provider configuration lives in <code>nanobot/providers/registry.py</code>. Adding a new provider is a 2-step process:</p>
+
+      <div class="flow-step">
+        <div class="flow-step__num">1</div>
+        <div class="flow-step__content">
+          <h4>Add ProviderSpec to PROVIDERS in <code>registry.py</code></h4>
+          <p>Define metadata: name, keywords, API key env var, model prefix, detection rules, etc.</p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="flow-step__num">2</div>
+        <div class="flow-step__content">
+          <h4>Add config field to <code>ProvidersConfig</code> in <code>config/schema.py</code></h4>
+          <p>Create the configuration class field so users can set API keys in their config file.</p>
+        </div>
+      </div>
+
+      <p><strong>That's it.</strong> Everything else — env var setup, prefixing, status display — derives automatically from the spec.</p>
+
+      <h3>ProviderSpec Fields</h3>
+      <details>
+        <summary>Click to expand the full ProviderSpec template</summary>
+        <div class="code-block">
+          <pre>ProviderSpec(
+    # Identity
+    name="myprovider",                     # config field name (lowercase)
+    keywords=("myprovider", "mymodel"),    # case-insensitive model name keywords
+    env_key="MYPROVIDER_API_KEY",          # env var for LiteLLM
+
+    # Display
+    display_name="My Provider",            # shown in `nanobot status`
+
+    # Model Prefixing
+    litellm_prefix="myprovider",           # "mymodel" → "myprovider/mymodel"
+    skip_prefixes=("myprovider/",),        # don't re-prefix if already has this prefix
+
+    # Extra env vars (e.g., for special endpoints)
+    env_extras=(
+        ("MY_EXTRA_VAR", "{api_key}"),     # {api_key} and {api_base} are placeholders
+    ),
+
+    # Gateway Detection (for gateways & local deployments)
+    is_gateway=False,                      # can route any model? (OpenRouter, AiHubMix)
+    is_local=False,                        # local deployment? (vLLM, Ollama)
+    detect_by_key_prefix="sk-or-",         # match API key prefix for auto-detection
+    detect_by_base_keyword="openrouter",   # match URL substring for auto-detection
+    default_api_base="https://api.provider.com/v1",
+
+    # Gateway-specific
+    strip_model_prefix=False,              # strip "provider/" before re-prefixing?
+
+    # Per-model parameter overrides
+    model_overrides=(
+        ("model-name", {"temperature": 1.0}),
+    ),
+
+    # Auth Type
+    is_oauth=False,                        # OAuth flow instead of API key?
+    is_direct=False,                       # use CustomProvider (bypass LiteLLM)?
+
+    # Feature Support
+    supports_prompt_caching=False,         # Anthropic cache_control support?
+)</pre>
+        </div>
+      </details>
+
+      <h3>Real Registry Examples</h3>
+      <div class="card card--recessed">
+        <h4>Standard Provider: Anthropic</h4>
+        <div class="code-block">
+          <pre>ProviderSpec(
+    name="anthropic",
+    keywords=("anthropic", "claude"),
+    env_key="ANTHROPIC_API_KEY",
+    display_name="Anthropic",
+    litellm_prefix="",                  # LiteLLM recognizes "claude-*" natively
+    skip_prefixes=(),
+    env_extras=(),
+    is_gateway=False,
+    is_local=False,
+    detect_by_key_prefix="",
+    detect_by_base_keyword="",
+    default_api_base="",
+    strip_model_prefix=False,
+    model_overrides=(),
+    supports_prompt_caching=True,       # Supports Anthropic cache_control
+)</pre>
+        </div>
+      </div>
+
+      <div class="card card--recessed">
+        <h4>Gateway Provider: OpenRouter</h4>
+        <div class="code-block">
+          <pre>ProviderSpec(
+    name="openrouter",
+    keywords=("openrouter",),
+    env_key="OPENROUTER_API_KEY",
+    display_name="OpenRouter",
+    litellm_prefix="openrouter",
+    skip_prefixes=(),
+    env_extras=(),
+    is_gateway=True,                    # Can route ANY model
+    is_local=False,
+    detect_by_key_prefix="sk-or-",      # API key starts with "sk-or-"
+    detect_by_base_keyword="openrouter",
+    default_api_base="https://openrouter.ai/api/v1",
+    strip_model_prefix=False,
+    model_overrides=(),
+    supports_prompt_caching=True,
+)</pre>
+        </div>
+      </div>
+
+      <div class="card card--recessed">
+        <h4>Provider with Extra Env Vars: Moonshot (Kimi)</h4>
+        <div class="code-block">
+          <pre>ProviderSpec(
+    name="moonshot",
+    keywords=("moonshot", "kimi"),
+    env_key="MOONSHOT_API_KEY",
+    display_name="Moonshot",
+    litellm_prefix="moonshot",
+    skip_prefixes=("moonshot/", "openrouter/"),
+    env_extras=(
+        ("MOONSHOT_API_BASE", "{api_base}"),  # Also set API base env var
+    ),
+    is_gateway=False,
+    is_local=False,
+    detect_by_key_prefix="",
+    detect_by_base_keyword="",
+    default_api_base="https://api.moonshot.ai/v1",
+    strip_model_prefix=False,
+    model_overrides=(
+        ("kimi-k2.5", {"temperature": 1.0}),  # K2.5 requires temp >= 1.0
+    ),
+)</pre>
+        </div>
+      </div>
+
+      <div class="card card--recessed">
+        <h4>Direct Provider: CustomProvider</h4>
+        <div class="code-block">
+          <pre>ProviderSpec(
+    name="custom",
+    keywords=(),                        # No auto-detection by model name
+    env_key="",                         # No standard API key
+    display_name="Custom",
+    litellm_prefix="",
+    skip_prefixes=(),
+    env_extras=(),
+    is_gateway=False,
+    is_local=False,
+    detect_by_key_prefix="",
+    detect_by_base_keyword="",
+    default_api_base="",
+    strip_model_prefix=False,
+    model_overrides=(),
+    is_direct=True,                     # Use CustomProvider instead of LiteLLM
+)</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Model Name Resolution -->
+    <section>
+      <h2>Model Name Resolution</h2>
+      <p>LiteLLM requires provider-prefixed model names. Nanobot auto-applies prefixes from the registry — <strong>no manual prefixing needed in calling code.</strong></p>
+
+      <h3>Standard Provider Mode</h3>
+      <div class="example-pathway">
+        <p><strong>User sets model:</strong> <code>"claude-opus"</code></p>
+        <p><strong>System detects:</strong> <code>anthropic</code> provider (keyword match)</p>
+        <p><strong>Registry lookup:</strong> <code>litellm_prefix=""</code> (Anthropic is natively recognized)</p>
+        <p><strong>LiteLLM gets:</strong> <code>"claude-opus"</code> (no prefix needed)</p>
+      </div>
+
+      <div class="example-pathway">
+        <p><strong>User sets model:</strong> <code>"glm-4"</code></p>
+        <p><strong>System detects:</strong> <code>zhipu</code> provider (keyword match)</p>
+        <p><strong>Registry lookup:</strong> <code>litellm_prefix="zai"</code></p>
+        <p><strong>LiteLLM gets:</strong> <code>"zai/glm-4"</code> (prefix applied)</p>
+      </div>
+
+      <h3>Gateway Mode</h3>
+      <p>Gateways route <em>any</em> model, so resolution works differently:</p>
+
+      <div class="example-pathway secondary">
+        <p><strong>Scenario:</strong> OpenRouter (gateway) with user model <code>"claude-opus"</code></p>
+        <p><strong>Registry:</strong> <code>is_gateway=True</code>, <code>litellm_prefix="openrouter"</code>, <code>strip_model_prefix=False</code></p>
+        <p><strong>LiteLLM gets:</strong> <code>"openrouter/claude-opus"</code></p>
+      </div>
+
+      <div class="example-pathway secondary">
+        <p><strong>Scenario:</strong> AiHubMix (gateway) with user model <code>"anthropic/claude-opus"</code></p>
+        <p><strong>Registry:</strong> <code>is_gateway=True</code>, <code>litellm_prefix="openai"</code>, <code>strip_model_prefix=True</code></p>
+        <p><strong>Resolution:</strong> <code>"anthropic/claude-opus"</code> → <code>"claude-opus"</code> (strip prefix) → <code>"openai/claude-opus"</code> (re-prefix for AiHubMix)</p>
+        <p><strong>Why?</strong> AiHubMix is OpenAI-compatible and doesn't understand "anthropic/" prefix, so we strip it and use OpenAI prefix instead</p>
+      </div>
+
+      <h3>Common Mistake: Double-Prefix</h3>
+      <div class="card card--tertiary">
+        <p><strong>Symptom:</strong> API error mentioning <code>"deepseek/deepseek/model"</code> (double prefix)</p>
+        <p><strong>Cause:</strong> User passes <code>"deepseek/model"</code>, system adds another <code>"deepseek/"</code> prefix</p>
+        <p><strong>Fix:</strong> Add the prefix to <code>skip_prefixes</code>:</p>
+        <div class="code-block">
+          <pre>skip_prefixes=("deepseek/",)  # Don't re-prefix if model already has this</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Provider Detection -->
+    <section>
+      <h2>Provider Detection & Selection</h2>
+      <p>Nanobot detects which provider to use by checking, in priority order:</p>
+
+      <ol>
+        <li><strong>Model name keywords</strong> — "claude" → Anthropic, "gpt" → OpenAI, etc.</li>
+        <li><strong>API key prefix</strong> — "sk-or-" → OpenRouter (for gateways)</li>
+        <li><strong>API base URL keyword</strong> — "aihubmix" in URL → AiHubMix (for gateways)</li>
+        <li><strong>Config key</strong> — <code>provider_name</code> from config file</li>
+      </ol>
+
+      <h3>Detection Code Flow</h3>
+      <div class="card card--recessed">
+        <p><strong>Standard providers</strong> are detected by model name via <code>find_by_model()</code>:</p>
+        <div class="code-block">
+          <pre>def find_by_model(model: str) -> ProviderSpec | None:
+    """Match by keyword (case-insensitive)."""
+    model_lower = model.lower()
+    
+    # Check for explicit prefix match first (e.g., "deepseek/model")
+    if "/" in model_lower:
+        prefix = model_lower.split("/", 1)[0]
+        for spec in PROVIDERS:
+            if prefix == spec.name:
+                return spec
+    
+    # Then check keywords
+    for spec in PROVIDERS:
+        if any(kw in model_lower for kw in spec.keywords):
+            return spec
+    return None</pre>
+        </div>
+      </div>
+
+      <div class="card card--recessed">
+        <p><strong>Gateways & local</strong> are detected by <code>find_gateway()</code>:</p>
+        <div class="code-block">
+          <pre>def find_gateway(
+    provider_name: str | None = None,
+    api_key: str | None = None,
+    api_base: str | None = None,
+) -> ProviderSpec | None:
+    """Detect gateway by: config key → api_key prefix → api_base keyword."""
+    
+    # 1. Config key wins
+    if provider_name:
+        spec = find_by_name(provider_name)
+        if spec and (spec.is_gateway or spec.is_local):
+            return spec
+    
+    # 2. API key prefix (e.g., "sk-or-" → OpenRouter)
+    for spec in PROVIDERS:
+        if spec.detect_by_key_prefix and api_key:
+            if api_key.startswith(spec.detect_by_key_prefix):
+                return spec
+    
+    # 3. API base URL keyword (e.g., "aihubmix" in URL)
+    for spec in PROVIDERS:
+        if spec.detect_by_base_keyword and api_base:
+            if spec.detect_by_base_keyword in api_base:
+                return spec
+    
+    return None</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- LLMResponse Contract -->
+    <section>
+      <h2>LLMResponse Contract</h2>
+      <p>All providers normalize their API response into <code>LLMResponse</code> — a universal envelope.</p>
+
+      <h3>Data Structure</h3>
+      <div class="code-block">
+        <pre>@dataclass
+class LLMResponse:
+    content: str | None                    # Text response (None if tool-calls only)
+    tool_calls: list[ToolCallRequest]      # Parsed tool call requests
+    finish_reason: str                     # "stop", "tool_calls", "error", etc.
+    usage: dict[str, int]                  # prompt_tokens, completion_tokens, total_tokens
+    reasoning_content: str | None          # Chain-of-thought (DeepSeek-R1, Kimi K2.5)
+    thinking_blocks: list[dict] | None     # Structured thinking (Anthropic extended thinking)
+    
+    @property
+    def has_tool_calls(self) -> bool:
+        return len(self.tool_calls) > 0
+
+
+@dataclass
+class ToolCallRequest:
+    id: str              # Short unique ID (9-char alphanumeric)
+    name: str            # Tool function name
+    arguments: dict      # Parsed arguments (NOT raw JSON string)</pre>
+      </div>
+
+      <h3>Normalization Rules</h3>
+      <ul class="feature-list">
+        <li><code>content</code>: use <code>None</code> (not <code>""</code>) when assistant is tool-calling with no text</li>
+        <li><code>reasoning_content</code>: use <code>or None</code> pattern to convert empty strings to <code>None</code></li>
+        <li><code>thinking_blocks</code>: use <code>or None</code> pattern (same reason)</li>
+        <li><code>usage</code> keys must always be standard: <code>prompt_tokens</code>, <code>completion_tokens</code>, <code>total_tokens</code></li>
+        <li>Both thinking fields are persisted to session history for future context</li>
+      </ul>
+    </section>
+
+    <!-- Practical Examples -->
+    <section>
+      <h2>Practical Examples</h2>
+
+      <h3>Example 1: Adding DashScope (Qwen)</h3>
+      <p>DashScope is already in the registry. Here's how it was added:</p>
+
+      <div class="card">
+        <h4>Step 1: Add ProviderSpec</h4>
+        <p><strong>File:</strong> <code>nanobot/providers/registry.py</code></p>
+        <div class="code-block">
+          <pre>ProviderSpec(
+    name="dashscope",
+    keywords=("qwen", "dashscope"),
+    env_key="DASHSCOPE_API_KEY",
+    display_name="DashScope",
+    litellm_prefix="dashscope",
+    skip_prefixes=("dashscope/", "openrouter/"),
+    env_extras=(),
+    is_gateway=False,
+    is_local=False,
+    detect_by_key_prefix="",
+    detect_by_base_keyword="",
+    default_api_base="",
+    strip_model_prefix=False,
+    model_overrides=(),
+)</pre>
+        </div>
+
+        <h4>Step 2: Add Config Field</h4>
+        <p><strong>File:</strong> <code>nanobot/config/schema.py</code></p>
+        <div class="code-block">
+          <pre>class ProvidersConfig(Base):
+    anthropic: ProviderConfig = Field(default_factory=ProviderConfig)
+    openai: ProviderConfig = Field(default_factory=ProviderConfig)
+    dashscope: ProviderConfig = Field(default_factory=ProviderConfig)  # ← Add this
+    # ... other providers ...</pre>
+        </div>
+
+        <h4>Result</h4>
+        <ul class="feature-list">
+          <li>User can now set: <code>DASHSCOPE_API_KEY=sk-xxx</code></li>
+          <li>User model: <code>"qwen-max"</code> → <code>"dashscope/qwen-max"</code> (auto-prefixed)</li>
+          <li>Keyword detection: "qwen" or "dashscope" in model name matches this provider</li>
+          <li><code>nanobot status</code> shows DashScope provider if API key is set</li>
+        </ul>
+      </div>
+
+      <h3>Example 2: Using CustomProvider for vLLM</h3>
+      <p>You have a local vLLM server at <code>http://localhost:8000/v1</code> with Llama-2 model.</p>
+
+      <div class="card">
+        <h4>Configuration</h4>
+        <div class="code-block">
+          <pre>[agents]
+model = "Llama-2-7B-chat"
+
+[providers.custom]
+api_key = "no-key"
+api_base = "http://localhost:8000/v1"</pre>
+        </div>
+
+        <h4>How It Works</h4>
+        <ul class="feature-list">
+          <li>Config key <code>custom</code> is in registry with <code>is_direct=True</code></li>
+          <li>System uses <code>CustomProvider</code> instead of LiteLLM</li>
+          <li><code>CustomProvider</code> uses OpenAI SDK directly (vLLM is OpenAI-compatible)</li>
+          <li>Request goes: <code>CustomProvider.chat()</code> → <code>AsyncOpenAI(...).chat.completions.create()</code> → vLLM</li>
+          <li>Response is parsed into <code>LLMResponse</code></li>
+        </ul>
+
+        <h4>Why CustomProvider?</h4>
+        <p>vLLM is OpenAI-compatible, so it doesn't need LiteLLM's multi-provider abstraction. CustomProvider is lighter and faster.</p>
+      </div>
+
+      <h3>Example 3: Detecting OpenRouter with API Key</h3>
+      <p>User sets <code>OPENROUTER_API_KEY=sk-or-xxx</code>. How does Nanobot detect it?</p>
+
+      <div class="card">
+        <h4>Detection Flow</h4>
+        <ol>
+          <li><code>LiteLLMProvider.__init__()</code> calls <code>find_gateway(provider_name, api_key, api_base)</code></li>
+          <li>No <code>provider_name</code> set, so check API key prefix</li>
+          <li>API key starts with <code>"sk-or-"</code></li>
+          <li>Registry lookup finds OpenRouter spec with <code>detect_by_key_prefix="sk-or-"</code></li>
+          <li><code>_gateway = OpenRouter spec</code></li>
+          <li>System knows it's a gateway, applies <code>openrouter/</code> prefix to models</li>
+        </ol>
+
+        <h4>Usage</h4>
+        <div class="code-block">
+          <pre># User can now use ANY model through OpenRouter:
+provider = LiteLLMProvider(
+    api_key="sk-or-xxx",
+    default_model="claude-opus"
+)
+
+# Behind the scenes:
+# 1. Detects OpenRouter gateway automatically
+# 2. Resolves "claude-opus" → "openrouter/claude-opus"
+# 3. LiteLLM routes it through OpenRouter API
+# 4. OpenRouter calls the actual Claude API
+# 5. Response normalized to LLMResponse</pre>
+        </div>
+      </div>
+
+      <h3>Example 4: Model Overrides (Kimi K2.5)</h3>
+      <p>Moonshot's Kimi K2.5 API enforces <code>temperature >= 1.0</code>. How does Nanobot handle this?</p>
+
+      <div class="card">
+        <h4>Registry Config</h4>
+        <div class="code-block">
+          <pre>ProviderSpec(
+    name="moonshot",
+    keywords=("moonshot", "kimi"),
+    env_key="MOONSHOT_API_KEY",
+    # ...
+    model_overrides=(
+        ("kimi-k2.5", {"temperature": 1.0}),  # Force temp to 1.0 for this model
+    ),
+)</pre>
+        </div>
+
+        <h4>Execution</h4>
+        <div class="code-block">
+          <pre>provider.chat(
+    messages=[...],
+    model="kimi-k2.5",
+    temperature=0.5  # User wanted 0.5
+)
+
+# LiteLLMProvider._resolve_model() applies overrides:
+# lookup("kimi-k2.5") returns {"temperature": 1.0}
+# Final call to LiteLLM has temperature=1.0 (user value overridden)</pre>
+        </div>
+
+        <h4>Result</h4>
+        <p>User doesn't need to know about Kimi's minimum temperature. The system enforces it automatically.</p>
+      </div>
+    </section>
+
+    <!-- Environment Variables -->
+    <section>
+      <h2>Environment Variables & Setup</h2>
+      <p>The registry automatically manages all env vars from ProviderSpec metadata.</p>
+
+      <h3>Standard Pattern</h3>
+      <div class="example-pathway">
+        <p><strong>ProviderSpec:</strong> <code>env_key="ANTHROPIC_API_KEY"</code></p>
+        <p><strong>User sets:</strong> <code>ANTHROPIC_API_KEY=sk-ant-xxx</code></p>
+        <p><strong>LiteLLMProvider:</strong> Reads from env and passes to LiteLLM</p>
+        <p><strong>LiteLLM:</strong> Uses it to authenticate with Anthropic API</p>
+      </div>
+
+      <h3>Extra Env Vars (env_extras)</h3>
+      <p>Some providers need additional env vars beyond the API key. Example: Moonshot's <code>MOONSHOT_API_BASE</code>:</p>
+
+      <div class="example-pathway">
+        <div class="code-block">
+          <pre>ProviderSpec(
+    name="moonshot",
+    env_key="MOONSHOT_API_KEY",
+    env_extras=(
+        ("MOONSHOT_API_BASE", "{api_base}"),  # Placeholder: user's api_base or spec default
+    ),
+)</pre>
+        </div>
+        <p><strong>Placeholder rules:</strong></p>
+        <ul class="feature-list">
+          <li><code>{api_key}</code> → User's API key</li>
+          <li><code>{api_base}</code> → User's config <code>api_base</code>, or <code>spec.default_api_base</code></li>
+        </ul>
+      </div>
+
+      <h3>Verifying Setup</h3>
+      <p>Run <code>nanobot status</code> to see all providers, their detection status, and env var configuration:</p>
+      <div class="code-block">
+        <pre>$ nanobot status
+
+Providers Status
+================
+
+OpenRouter (gateway)
+  Status:     ✓ configured
+  API Key:    sk-or-xxx (OPENROUTER_API_KEY)
+  
+Anthropic (standard)
+  Status:     ✓ configured
+  API Key:    sk-ant-xxx (ANTHROPIC_API_KEY)
+  
+DeepSeek (standard)
+  Status:     ⚠ missing API key (DEEPSEEK_API_KEY)
+
+Current Model: claude-opus
+Detected Provider: Anthropic
+Resolved Model: claude-opus (no prefix needed)</pre>
+      </div>
+    </section>
+
+    <!-- Advanced: Adding a Custom Provider -->
+    <section>
+      <h2>Advanced: Adding a Custom Provider Class</h2>
+      <p>Only needed when LiteLLM doesn't support the provider AND the API is not OpenAI-compatible. This is rare.</p>
+
+      <h3>When to Do This</h3>
+      <ul class="feature-list">
+        <li>Provider's API format is <strong>not</strong> OpenAI-compatible</li>
+        <li>Provider uses <strong>OAuth</strong> instead of API keys</li>
+        <li>Provider has <strong>custom streaming format</strong> for tool calls</li>
+        <li>Provider has <strong>unique tool call ID format</strong> that breaks compatibility</li>
+      </ul>
+
+      <h3>Real Example: OpenAICodexProvider</h3>
+      <p>OpenAI Codex uses OAuth (not API keys) and custom SSE streaming format. It extends <code>LLMProvider</code> with ~314 lines:</p>
+
+      <div class="card card--recessed">
+        <div class="code-block">
+          <pre>class OpenAICodexProvider(LLMProvider):
+    """Custom OAuth-based provider for OpenAI Codex."""
+    
+    def __init__(self, api_base: str = "https://chatgpt.com/backend-api"):
+        super().__init__()
+        self.api_base = api_base
+        self._session = None  # For OAuth flow & cookies
+    
+    async def chat(self, messages: list[dict[str, Any]], ...):
+        """Implement OAuth flow, custom request format, SSE parsing."""
+        # 1. Get OAuth token (user login flow)
+        # 2. Build custom message format (not standard OpenAI)
+        # 3. Stream response as Server-Sent Events
+        # 4. Parse tool calls from custom format
+        # 5. Return LLMResponse
+        pass
+    
+    def get_default_model(self) -> str:
+        return "gpt-4-turbo"</pre>
+        </div>
+      </div>
+
+      <h3>How to Implement</h3>
+      <ol>
+        <li><strong>Extend <code>LLMProvider</code></strong> — inherit base class</li>
+        <li><strong>Implement <code>async def chat()</code></strong> — handle request/response</li>
+        <li><strong>Implement <code>get_default_model()</code></strong> — default model name</li>
+        <li><strong>Normalize response to <code>LLMResponse</code></strong> — use ToolCallRequest for tool calls</li>
+        <li><strong>Add ProviderSpec with <code>is_oauth=True</code> or custom detection</strong></li>
+        <li><strong>Register in <code>_make_provider()</code> in CLI commands</strong></li>
+      </ol>
+
+      <p><strong>Expected time:</strong> 1–2 hours for a complete implementation with testing.</p>
+    </section>
+
+    <!-- Architecture Decisions -->
+    <section>
+      <h2>Architecture Decisions</h2>
+
+      <h3>Why Registry Pattern?</h3>
+      <ul class="feature-list">
+        <li><strong>Single source of truth</strong> — all provider metadata in one place</li>
+        <li><strong>DRY principle</strong> — env vars, prefixing, detection all derive from spec</li>
+        <li><strong>No if-elif chains</strong> — lookup instead of conditionals</li>
+        <li><strong>Auto-discovery</strong> — <code>nanobot status</code> shows all providers without extra code</li>
+        <li><strong>Extensible</strong> — add a spec in 5 minutes, no class needed</li>
+      </ul>
+
+      <h3>Why Three Pathways?</h3>
+      <ul class="feature-list">
+        <li><strong>LiteLLM</strong> — covers 95% of use cases, minimal boilerplate</li>
+        <li><strong>CustomProvider</strong> — 56 lines for OpenAI-compatible endpoints, avoids LiteLLM overhead</li>
+        <li><strong>Custom Class</strong> — full control for edge cases (OAuth, custom streaming, etc.)</li>
+      </ul>
+
+      <h3>Why LLMResponse Contract?</h3>
+      <ul class="feature-list">
+        <li><strong>Decoupling</strong> — agent loop doesn't care which provider was used</li>
+        <li><strong>Uniform handling</strong> — tool calls are parsed identically regardless of provider</li>
+        <li><strong>Persistence</strong> — reasoning content & thinking blocks saved to session history</li>
+        <li><strong>Debugging</strong> — always know what the LLM returned in standard format</li>
+      </ul>
+    </section>
+
+    <!-- Provider Status Reference -->
+    <section>
+      <h2>Provider Status Reference</h2>
+      <p>All providers currently configured in the registry:</p>
+
+      <table class="spec-table">
+        <thead>
+          <tr>
+            <th>Provider</th>
+            <th>Type</th>
+            <th>Auto-Detect</th>
+            <th>Prefix</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Anthropic</strong></td>
+            <td>Standard</td>
+            <td>Keywords: "claude"</td>
+            <td>None</td>
+            <td><span class="status-badge active">✓ LiteLLM</span></td>
+          </tr>
+          <tr>
+            <td><strong>OpenAI</strong></td>
+            <td>Standard</td>
+            <td>Keywords: "gpt"</td>
+            <td>None</td>
+            <td><span class="status-badge active">✓ LiteLLM</span></td>
+          </tr>
+          <tr>
+            <td><strong>DeepSeek</strong></td>
+            <td>Standard</td>
+            <td>Keywords: "deepseek"</td>
+            <td>deepseek/</td>
+            <td><span class="status-badge active">✓ LiteLLM</span></td>
+          </tr>
+          <tr>
+            <td><strong>Gemini</strong></td>
+            <td>Standard</td>
+            <td>Keywords: "gemini"</td>
+            <td>gemini/</td>
+            <td><span class="status-badge active">✓ LiteLLM</span></td>
+          </tr>
+          <tr>
+            <td><strong>Zhipu (GLM)</strong></td>
+            <td>Standard</td>
+            <td>Keywords: "zhipu", "glm"</td>
+            <td>zai/</td>
+            <td><span class="status-badge active">✓ LiteLLM</span></td>
+          </tr>
+          <tr>
+            <td><strong>DashScope (Qwen)</strong></td>
+            <td>Standard</td>
+            <td>Keywords: "qwen"</td>
+            <td>dashscope/</td>
+            <td><span class="status-badge active">✓ LiteLLM</span></td>
+          </tr>
+          <tr>
+            <td><strong>Moonshot (Kimi)</strong></td>
+            <td>Standard</td>
+            <td>Keywords: "kimi"</td>
+            <td>moonshot/</td>
+            <td><span class="status-badge active">✓ LiteLLM</span></td>
+          </tr>
+          <tr>
+            <td><strong>OpenRouter</strong></td>
+            <td>Gateway</td>
+            <td>Key prefix: "sk-or-"</td>
+            <td>openrouter/</td>
+            <td><span class="status-badge gateway">⚡ Gateway</span></td>
+          </tr>
+          <tr>
+            <td><strong>AiHubMix</strong></td>
+            <td>Gateway</td>
+            <td>URL: "aihubmix"</td>
+            <td>openai/</td>
+            <td><span class="status-badge gateway">⚡ Gateway</span></td>
+          </tr>
+          <tr>
+            <td><strong>vLLM/Local</strong></td>
+            <td>Local</td>
+            <td>Config key: "vllm"</td>
+            <td>hosted_vllm/</td>
+            <td><span class="status-badge direct">📍 Direct</span></td>
+          </tr>
+          <tr>
+            <td><strong>Custom</strong></td>
+            <td>Direct</td>
+            <td>Config key: "custom"</td>
+            <td>None</td>
+            <td><span class="status-badge direct">📍 Direct</span></td>
+          </tr>
+          <tr>
+            <td><strong>OpenAI Codex</strong></td>
+            <td>OAuth</td>
+            <td>URL: "codex"</td>
+            <td>None</td>
+            <td><span class="status-badge tertiary">🔐 OAuth</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Debugging -->
+    <section>
+      <h2>Debugging Provider Issues</h2>
+
+      <h3>Common Issues & Solutions</h3>
+
+      <details>
+        <summary><strong>Error: "Model not found" or "API error"</strong></summary>
+        <div style="padding: 1rem; margin-top: 0.5rem;">
+          <p><strong>Likely cause:</strong> Model name not matched to provider.</p>
+          <p><strong>Debug:</strong></p>
+          <ol>
+            <li>Run <code>nanobot status</code> to see detected provider and resolved model</li>
+            <li>Check if provider is configured (API key set)</li>
+            <li>Verify model name keywords match registry</li>
+            <li>If using a gateway, ensure prefix is being applied correctly</li>
+          </ol>
+        </div>
+      </details>
+
+      <details>
+        <summary><strong>Error: Double-prefix (e.g., "deepseek/deepseek/model")</strong></summary>
+        <div style="padding: 1rem; margin-top: 0.5rem;">
+          <p><strong>Likely cause:</strong> Model already has prefix, system added another.</p>
+          <p><strong>Fix:</strong> Add prefix to <code>skip_prefixes</code> in ProviderSpec</p>
+          <div class="code-block">
+            <pre>skip_prefixes=("deepseek/",)  # Skip re-prefixing</pre>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary><strong>Error: Environment variable not found</strong></summary>
+        <div style="padding: 1rem; margin-top: 0.5rem;">
+          <p><strong>Debug:</strong></p>
+          <ol>
+            <li>Check <code>nanobot status</code> for API key configuration</li>
+            <li>Verify env var name matches registry (e.g., <code>ANTHROPIC_API_KEY</code>)</li>
+            <li>For gateways, check key prefix matches <code>detect_by_key_prefix</code></li>
+            <li>For extra env vars, verify placeholders are resolved (check logs)</li>
+          </ol>
+        </div>
+      </details>
+
+      <details>
+        <summary><strong>Wrong provider detected with same API key</strong></summary>
+        <div style="padding: 1rem; margin-top: 0.5rem;">
+          <p><strong>Likely cause:</strong> Multiple providers share same env var, detection order matters.</p>
+          <p><strong>Fix:</strong> Use <code>detect_by_key_prefix</code> to distinguish (e.g., OpenRouter's "sk-or-")</p>
+          <p><strong>Or:</strong> Explicitly set <code>provider_name</code> in config to force detection</p>
+        </div>
+      </details>
+    </section>
+
+    <!-- Summary -->
+    <section>
+      <h2>Summary</h2>
+      <div class="card card--primary">
+        <h3>The Provider System at a Glance</h3>
+        <ul class="feature-list">
+          <li><strong>Registry-driven:</strong> All provider metadata in <code>PROVIDERS</code> tuple — single source of truth</li>
+          <li><strong>Three pathways:</strong> LiteLLM (default), CustomProvider (OpenAI-compatible), custom class (advanced)</li>
+          <li><strong>Auto-detection:</strong> By model name, API key prefix, or config key</li>
+          <li><strong>Auto-prefixing:</strong> Model names automatically prefixed for LiteLLM routing</li>
+          <li><strong>Unified response:</strong> All providers normalize to <code>LLMResponse</code></li>
+          <li><strong>Extensible:</strong> Add a new provider in 5 minutes (just ProviderSpec + config field)</li>
+        </ul>
+      </div>
+
+      <div class="card card--secondary">
+        <h3>Key Files</h3>
+        <ul class="feature-list">
+          <li><code>nanobot/providers/registry.py</code> — <code>ProviderSpec</code> definitions & lookup logic</li>
+          <li><code>nanobot/providers/base.py</code> — <code>LLMProvider</code> abstract base, <code>LLMResponse</code> contract</li>
+          <li><code>nanobot/providers/litellm_provider.py</code> — Default pathway (LiteLLM-based)</li>
+          <li><code>nanobot/providers/custom_provider.py</code> — Direct pathway (OpenAI SDK)</li>
+          <li><code>nanobot/config/schema.py</code> — <code>ProvidersConfig</code> for user configuration</li>
+        </ul>
+      </div>
+
+      <div class="card card--tertiary">
+        <h3>Quick Start: Adding a New Provider</h3>
+        <ol>
+          <li>Check if LiteLLM supports it: if yes, use <strong>Pathway 1</strong></li>
+          <li>If OpenAI-compatible: use <strong>Pathway 2</strong></li>
+          <li>Otherwise: implement custom class extending <code>LLMProvider</code></li>
+          <li>Add <code>ProviderSpec</code> to <code>PROVIDERS</code> tuple in <code>registry.py</code></li>
+          <li>Add config field to <code>ProvidersConfig</code> in <code>config/schema.py</code></li>
+          <li>Run <code>nanobot status</code> to verify detection</li>
+        </ol>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+
+    function zoomMermaid(container, scale) {
+      const mermaid = container.querySelector('.mermaid');
+      const svg = mermaid.querySelector('svg');
+      if (svg) {
+        const currentScale = parseFloat(svg.style.transform?.match(/scale\(([\d.]+)\)/)?.[1] || 1);
+        const newScale = currentScale * scale;
+        svg.style.transform = `scale(${newScale})`;
+        svg.style.transformOrigin = 'center top';
+      }
+    }
+
+    function resetMermaid(container) {
+      const mermaid = container.querySelector('.mermaid');
+      const svg = mermaid.querySelector('svg');
+      if (svg) {
+        svg.style.transform = 'scale(1)';
+      }
+    }
+
+    // Smooth scroll for links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Stagger animation on load
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+      card.style.animationDelay = `${index * 0.1}s`;
+    });
+  </script>
+</body>
+</html>

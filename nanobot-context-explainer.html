@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nanobot Context System Explainer</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #f8f7f6;
+      --surface: #ffffff;
+      --surface-2: #f3f2f1;
+      --surface-recessed: #ebe8e4;
+      --border: rgba(0, 0, 0, 0.08);
+      --text: #1a1a1a;
+      --text-dim: #666666;
+      --accent-primary: #0369a1;
+      --accent-primary-light: #e0f2fe;
+      --accent-secondary: #059669;
+      --accent-secondary-light: #d1fae5;
+      --accent-tertiary: #d97706;
+      --accent-tertiary-light: #fef3c7;
+      --accent-error: #dc2626;
+      --accent-error-light: #fee2e2;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f0f0f;
+        --surface: #1a1a1a;
+        --surface-2: #242424;
+        --surface-recessed: #0d0d0d;
+        --border: rgba(255, 255, 255, 0.08);
+        --text: #e5e5e5;
+        --text-dim: #a0a0a0;
+        --accent-primary: #38bdf8;
+        --accent-primary-light: rgba(56, 189, 248, 0.15);
+        --accent-secondary: #34d399;
+        --accent-secondary-light: rgba(52, 211, 153, 0.15);
+        --accent-tertiary: #fbbf24;
+        --accent-tertiary-light: rgba(251, 191, 36, 0.15);
+        --accent-error: #f87171;
+        --accent-error-light: rgba(248, 113, 113, 0.15);
+      }
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Navigation */
+    .nav-sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 250px;
+      height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 2rem 0;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .nav-sidebar h2 {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      padding: 0 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .nav-sidebar ul {
+      list-style: none;
+    }
+
+    .nav-sidebar li {
+      padding: 0;
+    }
+
+    .nav-sidebar a {
+      display: block;
+      padding: 0.75rem 1.5rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.9rem;
+      border-left: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .nav-sidebar a:hover {
+      color: var(--text);
+      border-left-color: var(--accent-primary);
+      background: var(--surface-2);
+    }
+
+    main {
+      margin-left: 250px;
+      padding: 3rem 2rem;
+      max-width: 1400px;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, var(--accent-primary-light) 0%, var(--accent-secondary-light) 100%);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 3rem;
+      margin-bottom: 4rem;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .hero .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: 4rem;
+      scroll-margin-top: 100px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .section-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 3rem;
+      height: 3rem;
+      background: var(--accent-primary);
+      color: white;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .section h2 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .section-desc {
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+      line-height: 1.8;
+    }
+
+    /* Cards */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: var(--accent-primary);
+      box-shadow: 0 8px 24px rgba(3, 105, 161, 0.1);
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    .card-accent {
+      width: 4px;
+      height: 4px;
+      background: var(--accent-primary);
+      border-radius: 50%;
+      margin-bottom: 0.75rem;
+      display: inline-block;
+    }
+
+    /* Diagram Container */
+    .diagram-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2rem;
+      margin: 2rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 400px;
+      overflow-x: auto;
+    }
+
+    .diagram-controls {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .diagram-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .diagram-btn:hover {
+      background: var(--accent-primary);
+      color: white;
+      border-color: var(--accent-primary);
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+
+    /* Code Block */
+    .code-block {
+      background: var(--surface-recessed);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      overflow-x: auto;
+      font-family: 'IBM Plex Mono', 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .code-label {
+      font-weight: 600;
+      color: var(--accent-primary);
+      margin-bottom: 0.75rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .code-content {
+      color: var(--text-dim);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    /* Flow Chart */
+    .flow-chart {
+      display: grid;
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+
+    .flow-item {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+
+    .flow-item::before {
+      content: '';
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: var(--accent-primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      position: relative;
+      top: 4px;
+    }
+
+    .flow-item:nth-child(1)::before {
+      content: '1';
+      background: var(--accent-primary);
+    }
+
+    .flow-item:nth-child(2)::before {
+      content: '2';
+      background: var(--accent-secondary);
+    }
+
+    .flow-item:nth-child(3)::before {
+      content: '3';
+      background: var(--accent-tertiary);
+    }
+
+    .flow-item:nth-child(4)::before {
+      content: '4';
+      background: var(--accent-error);
+    }
+
+    .flow-content h4 {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .flow-content p {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* Grid Layout */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Highlight Box */
+    .highlight {
+      background: var(--accent-primary-light);
+      border-left: 4px solid var(--accent-primary);
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .highlight {
+        background: rgba(56, 189, 248, 0.1);
+      }
+    }
+
+    .highlight h4 {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .highlight p {
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      background: var(--surface-2);
+      color: var(--text-dim);
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .badge--primary {
+      background: var(--accent-primary-light);
+      color: var(--accent-primary);
+      border-color: var(--accent-primary);
+    }
+
+    .badge--secondary {
+      background: var(--accent-secondary-light);
+      color: var(--accent-secondary);
+      border-color: var(--accent-secondary);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: 4rem;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+    }
+
+    /* Animation */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section {
+      animation: fadeUp 0.6s ease-out backwards;
+    }
+
+    .section:nth-child(1) { animation-delay: 0.1s; }
+    .section:nth-child(2) { animation-delay: 0.2s; }
+    .section:nth-child(3) { animation-delay: 0.3s; }
+    .section:nth-child(4) { animation-delay: 0.4s; }
+    .section:nth-child(5) { animation-delay: 0.5s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .section {
+        animation: none;
+      }
+    }
+
+    /* Mermaid Theming */
+    .mermaid {
+      --primary: var(--accent-primary);
+      --secondary: var(--accent-secondary);
+      --tertiary: var(--accent-tertiary);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .nav-sidebar {
+        width: 200px;
+      }
+
+      main {
+        margin-left: 200px;
+        padding: 2rem 1rem;
+      }
+
+      .hero h1 {
+        font-size: 1.8rem;
+      }
+
+      .section h2 {
+        font-size: 1.4rem;
+      }
+
+      .diagram-wrap {
+        padding: 1rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 1rem 0;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      main {
+        margin-left: 0;
+        padding: 1.5rem 1rem;
+      }
+
+      .hero {
+        padding: 1.5rem;
+      }
+
+      .hero h1 {
+        font-size: 1.4rem;
+      }
+
+      .section h2 {
+        font-size: 1.2rem;
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .section-num {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Sidebar -->
+  <nav class="nav-sidebar">
+    <h2>Navigation</h2>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#components">Components</a></li>
+      <li><a href="#assembly">Assembly Flow</a></li>
+      <li><a href="#system-prompt">System Prompt</a></li>
+      <li><a href="#messages">Message Building</a></li>
+      <li><a href="#agent-loop">Agent Loop</a></li>
+      <li><a href="#examples">Code Examples</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <!-- Hero Section -->
+    <div class="hero">
+      <h1>Nanobot Context System</h1>
+      <p class="subtitle">How identity, memory, and skills are assembled into agent prompts</p>
+    </div>
+
+    <!-- Section 1: Overview -->
+    <section class="section" id="overview">
+      <div class="section-header">
+        <div class="section-num">1</div>
+        <h2>System Overview</h2>
+      </div>
+
+      <p class="section-desc">
+        The nanobot context system is the brain of the agent. It builds comprehensive prompts by layering identity, environment metadata, persistent memory, and available skills. The ContextBuilder class orchestrates this assembly process.
+      </p>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-accent"></div>
+          <h3>Core Purpose</h3>
+          <p>Construct complete message lists (system prompt + conversation history) for LLM calls, ensuring the agent has full situational awareness.</p>
+        </div>
+        <div class="card">
+          <div class="card-accent"></div>
+          <h3>Key Inputs</h3>
+          <p>Identity, bootstrap files (AGENTS.md, SOUL.md, USER.md, TOOLS.md, IDENTITY.md), memory store, available skills, and conversation history.</p>
+        </div>
+        <div class="card">
+          <div class="card-accent"></div>
+          <h3>Key Output</h3>
+          <p>A structured message array ready for LLM consumption: [system, ...history, runtime_context, user_message].</p>
+        </div>
+      </div>
+
+      <div class="highlight">
+        <h4>Key Design Principle</h4>
+        <p>Context is immutable during a single turn but rebuilt fresh for each new turn. This ensures the agent always sees current memory, time, and skills while preventing context pollution from previous interactions.</p>
+      </div>
+    </section>
+
+    <!-- Section 2: Components -->
+    <section class="section" id="components">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <h2>Context Components</h2>
+      </div>
+
+      <p class="section-desc">
+        The context is composed of five distinct layers, each providing different types of guidance and information to the agent.
+      </p>
+
+      <div class="flow-chart">
+        <div class="flow-item">
+          <div class="flow-content">
+            <h4>Identity Layer</h4>
+            <p><strong>What:</strong> Agent name, runtime environment, workspace path, guidelines.</p>
+            <p><strong>Example:</strong> "You are nanobot, a helpful AI assistant running on macOS Arm64 with Python 3.11."</p>
+            <p><strong>Purpose:</strong> Grounds the agent in reality with hardware, OS, and core personality.</p>
+          </div>
+        </div>
+
+        <div class="flow-item">
+          <div class="flow-content">
+            <h4>Bootstrap Files</h4>
+            <p><strong>What:</strong> Markdown documents loaded from workspace root (AGENTS.md, SOUL.md, USER.md, TOOLS.md, IDENTITY.md).</p>
+            <p><strong>Example:</strong> SOUL.md might contain "You prioritize clarity over cleverness" and "Always ask for confirmation before destructive operations."</p>
+            <p><strong>Purpose:</strong> Inject project-specific values, constraints, and patterns.</p>
+          </div>
+        </div>
+
+        <div class="flow-item">
+          <div class="flow-content">
+            <h4>Memory Layer</h4>
+            <p><strong>What:</strong> Long-term facts extracted from MEMORY.md (last N entries within a token window).</p>
+            <p><strong>Example:</strong> "The user prefers async/await over promises. The codebase uses Jest for testing."</p>
+            <p><strong>Purpose:</strong> Preserve cross-session context without storing entire conversation history.</p>
+          </div>
+        </div>
+
+        <div class="flow-item">
+          <div class="flow-content">
+            <h4>Skills Layer</h4>
+            <p><strong>What:</strong> Always-enabled skills (full content) + summary of on-demand skills (names + descriptions).</p>
+            <p><strong>Example:</strong> Always-enabled: "visual-explainer skill for generating HTML diagrams." On-demand: "ast-grep for advanced code search."</p>
+            <p><strong>Purpose:</strong> Advertise capabilities and provide implementation guidance for available tools.</p>
+          </div>
+        </div>
+
+        <div class="flow-item">
+          <div class="flow-content">
+            <h4>Runtime Context</h4>
+            <p><strong>What:</strong> Current time, timezone, channel/chat metadata (injected before user message).</p>
+            <p><strong>Example:</strong> "[Runtime Context] Current Time: 2026-03-01 14:35 (Sunday)"</p>
+            <p><strong>Purpose:</strong> Provide temporal grounding and message routing information without polluting the main system prompt.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Assembly Flow -->
+    <section class="section" id="assembly">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <h2>Context Assembly Flow</h2>
+      </div>
+
+      <p class="section-desc">
+        The system prompt is built in a strict order: identity → bootstrap → memory → active skills → skills summary. This layering ensures proper precedence and readability.
+      </p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+          graph TD
+            A["📍 Identity Layer"] -->|Platform, workspace, guidelines| B["📄 Bootstrap Files"]
+            B -->|Project values, constraints| C["🧠 Memory Context"]
+            C -->|Persistent facts| D["⚡ Active Skills"]
+            D -->|Always-enabled tools| E["🔧 Skills Summary"]
+            E -->|Available on-demand tools| F["✅ Complete System Prompt"]
+            
+            style A fill:#e0f2fe,stroke:#0369a1,stroke-width:2px,color:#000
+            style B fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#000
+            style C fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#000
+            style D fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#000
+            style E fill:#fce7f3,stroke:#db2777,stroke-width:2px,color:#000
+            style F fill:#e5e7eb,stroke:#374151,stroke-width:2px,color:#000
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem;">Assembly Code Walkthrough</h3>
+
+      <div class="code-block">
+        <div class="code-label">build_system_prompt() sequence</div>
+        <div class="code-content">1. Get identity (runtime, workspace paths, guidelines)
+2. Load bootstrap files (AGENTS.md, SOUL.md, USER.md, TOOLS.md, IDENTITY.md)
+3. Append memory context (MEMORY.md, last N entries)
+4. Append always-enabled skills (full content)
+5. Append skills summary (names + descriptions of on-demand tools)
+6. Join all parts with "---" separator
+
+Result: A single comprehensive system prompt string</div>
+      </div>
+
+      <div class="highlight">
+        <h4>Why Layering Matters</h4>
+        <p><strong>Identity first:</strong> Establishes base personality and reality grounding. <strong>Bootstrap second:</strong> Project-specific overrides. <strong>Memory third:</strong> Contextual facts from prior sessions. <strong>Skills last:</strong> Capability advertisement doesn't overshadow values or facts.</p>
+      </div>
+    </section>
+
+    <!-- Section 4: System Prompt Building -->
+    <section class="section" id="system-prompt">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <h2>System Prompt Structure</h2>
+      </div>
+
+      <p class="section-desc">
+        A complete system prompt is a multi-part document. Each section plays a specific role in shaping agent behavior.
+      </p>
+
+      <div class="grid-2">
+        <div class="card" style="border-left: 4px solid var(--accent-primary);">
+          <h3>Identity Section</h3>
+          <p><code style="background: var(--surface-recessed); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.9rem;">_get_identity()</code></p>
+          <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-dim);">Platform (macOS Arm64, Python 3.11), workspace path, long-term memory location, history log location, and nanobot guidelines.</p>
+          <div style="margin-top: 1rem; padding: 1rem; background: var(--surface-recessed); border-radius: 6px; font-family: 'IBM Plex Mono'; font-size: 0.8rem;">
+# nanobot 🐈<br/>
+You are nanobot, a helpful AI assistant.<br/>
+<br/>
+## Runtime<br/>
+macOS arm64, Python 3.11
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-secondary);">
+          <h3>Bootstrap Section</h3>
+          <p><code style="background: var(--surface-recessed); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.9rem;">_load_bootstrap_files()</code></p>
+          <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-dim);">Reads all present bootstrap files from workspace root and includes their full content.</p>
+          <div style="margin-top: 1rem;">
+            <span class="badge badge--secondary">AGENTS.md</span>
+            <span class="badge badge--secondary">SOUL.md</span>
+            <span class="badge badge--secondary">USER.md</span>
+            <span class="badge badge--secondary">TOOLS.md</span>
+            <span class="badge badge--secondary">IDENTITY.md</span>
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-tertiary);">
+          <h3>Memory Section</h3>
+          <p><code style="background: var(--surface-recessed); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.9rem;">memory.get_memory_context()</code></p>
+          <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-dim);">Last N lines of MEMORY.md within the token window. Provides persistent facts across sessions.</p>
+          <div style="margin-top: 1rem; padding: 1rem; background: var(--surface-recessed); border-radius: 6px; font-family: 'IBM Plex Mono'; font-size: 0.8rem;">
+# Memory<br/>
+[2026-02-28 10:30] User prefers async/await.<br/>
+[2026-02-27 14:22] Project uses Jest.
+          </div>
+        </div>
+
+        <div class="card" style="border-left: 4px solid var(--accent-error);">
+          <h3>Skills Sections</h3>
+          <p><code style="background: var(--surface-recessed); padding: 0.2rem 0.4rem; border-radius: 4px; font-size: 0.9rem;">skills.get_always_skills()</code> + summary</p>
+          <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-dim);">Active skills (full SKILL.md content) + on-demand summary (names, descriptions).</p>
+          <div style="margin-top: 1rem;">
+            <span class="badge badge--primary">Always-Enabled</span>
+            <span class="badge">On-Demand</span>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem;">Complete System Prompt Example</h3>
+
+      <div class="code-block">
+        <div class="code-label">Generated system prompt structure</div>
+        <div class="code-content"># nanobot 🐈
+You are nanobot, a helpful AI assistant.
+
+## Runtime
+macOS arm64, Python 3.11
+
+## Workspace
+Your workspace is at: /Users/jim.salinas/projects/nanobot
+- Long-term memory: .../memory/MEMORY.md
+- History log: .../memory/HISTORY.md
+...
+
+---
+
+## AGENTS.md
+[Contents of AGENTS.md if it exists]
+
+---
+
+## SOUL.md
+[Contents of SOUL.md if it exists]
+
+---
+
+# Memory
+
+[2026-02-28 10:30] User prefers async/await style.
+[2026-02-27 14:22] Codebase uses Jest for testing.
+
+---
+
+# Active Skills
+
+[Full content of always-enabled skill SKILL.md files]
+
+---
+
+# Skills
+
+The following skills extend your capabilities...
+
+- visual-explainer: Generate HTML pages for diagrams
+- ast-grep: Search code using AST patterns
+- ...</div>
+      </div>
+    </section>
+
+    <!-- Section 5: Message Building -->
+    <section class="section" id="messages">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <h2>Message Building & LLM Calls</h2>
+      </div>
+
+      <p class="section-desc">
+        Once the system prompt is built, it's combined with conversation history and the current user message to create a complete message list for the LLM.
+      </p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+          graph TD
+            A["🔧 build_messages()"] -->|Input| B["System Prompt<br/>+<br/>History<br/>+<br/>Runtime Context<br/>+<br/>User Message"]
+            B -->|Output| C["Message Array"]
+            C --> D["🤖 LLM Call<br/>provider.complete()"]
+            D --> E["Assistant<br/>Response"]
+            E -->|Tool calls?| F["✅ Yes:<br/>Execute Tools"]
+            E -->|Done?| G["❌ No:<br/>Continue Loop"]
+            F -->|Tool results| H["add_tool_result()"]
+            G -->|Final response| I["📤 Send Output"]
+            H -->|Back to loop| J["Next iteration"]
+
+            style A fill:#e0f2fe,stroke:#0369a1,stroke-width:2px,color:#000
+            style C fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#000
+            style D fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#000
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem;">Message Array Structure</h3>
+
+      <div class="code-block">
+        <div class="code-label">Output of build_messages()</div>
+        <div class="code-content">[
+  {
+    "role": "system",
+    "content": "[Complete system prompt built above]"
+  },
+  {
+    "role": "user",
+    "content": "Earlier user message 1"
+  },
+  {
+    "role": "assistant",
+    "content": "Earlier assistant response 1"
+  },
+  {
+    "role": "user",
+    "content": "[Runtime Context — metadata only]\nCurrent Time: 2026-03-01 14:35 (Sunday)"
+  },
+  {
+    "role": "user",
+    "content": "Current user message with optional images"
+  }
+]</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Message Order Matters</h3>
+          <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 1rem;">The system prompt is always first, then conversation history, then runtime context (injected fresh each turn), then the current user message.</p>
+          <p style="font-size: 0.9rem; color: var(--text-dim);">This ensures the agent sees the most recent time, channel, and user intent without losing context from previous exchanges.</p>
+        </div>
+
+        <div class="card">
+          <h3>Tool Result Handling</h3>
+          <p style="font-size: 0.9rem; color: var(--text-dim); margin-bottom: 1rem;"><code style="background: var(--surface-recessed); padding: 0.2rem 0.4rem; border-radius: 4px;">add_tool_result()</code> appends tool execution results back to the message array.</p>
+          <p style="font-size: 0.9rem; color: var(--text-dim);">The agent uses these results to continue reasoning or make follow-up tool calls in the next iteration.</p>
+        </div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem;">Media Handling</h3>
+
+      <p style="color: var(--text-dim); margin-bottom: 1rem;">The <code style="background: var(--surface-recessed); padding: 0.2rem 0.4rem; border-radius: 4px;">_build_user_content()</code> method optionally encodes images as base64 and includes them in the user message for vision-capable models:</p>
+
+      <div class="code-block">
+        <div class="code-label">User content with images</div>
+        <div class="code-content">{
+  "role": "user",
+  "content": [
+    {
+      "type": "image_url",
+      "image_url": {
+        "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhE..."
+      }
+    },
+    {
+      "type": "text",
+      "text": "Can you describe this screenshot?"
+    }
+  ]
+}</div>
+      </div>
+    </section>
+
+    <!-- Section 6: Agent Loop Integration -->
+    <section class="section" id="agent-loop">
+      <div class="section-header">
+        <div class="section-num">6</div>
+        <h2>Context in the Agent Loop</h2>
+      </div>
+
+      <p class="section-desc">
+        The ContextBuilder is instantiated once at agent startup and used throughout the agent loop to build fresh messages for each LLM turn.
+      </p>
+
+      <div class="diagram-wrap">
+        <div class="mermaid">
+          graph TD
+            A["🚀 Agent Loop Starts"] -->|Create| B["ContextBuilder<br/>workspace"]
+            B -->|Next message| C["📥 Receive Message<br/>from Bus"]
+            C -->|Build| D["build_system_prompt()"]
+            D -->|Build| E["build_messages()"]
+            E -->|Call| F["🤖 LLM Complete"]
+            F -->|Response| G{"Tool calls?"}
+            G -->|Yes| H["Execute Tool"]
+            H -->|Result| I["add_tool_result()"]
+            I -->|Back to loop| G
+            G -->|No| J["Send Response<br/>to Bus"]
+            J -->|Loop| C
+
+            style B fill:#e0f2fe,stroke:#0369a1,stroke-width:2px,color:#000
+            style D fill:#d1fae5,stroke:#059669,stroke-width:2px,color:#000
+            style E fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#000
+            style F fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#000
+        </div>
+      </div>
+
+      <div class="highlight">
+        <h4>Fresh Context Every Turn</h4>
+        <p>The system prompt is <strong>rebuilt</strong> for each LLM call, not cached. This means memory updates, new skills, and bootstrap file changes are reflected immediately without restarting the agent. It's a deliberate design choice for responsiveness.</p>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem;">AgentLoop Usage Pattern</h3>
+
+      <div class="code-block">
+        <div class="code-label">How AgentLoop uses ContextBuilder</div>
+        <div class="code-content"># In AgentLoop.__init__
+self.context = ContextBuilder(workspace)
+
+# In AgentLoop.process_message()
+for iteration in range(max_iterations):
+    # Build fresh system prompt (includes current memory)
+    system_prompt = self.context.build_system_prompt()
+
+    # Build complete message list
+    messages = self.context.build_messages(
+        history=session.messages,
+        current_message=user_input,
+        skill_names=None,  # Optional skill filtering
+        media=attached_images,
+        channel=channel_name,
+        chat_id=chat_id
+    )
+
+    # Call LLM
+    response = self.provider.complete(
+        model=self.model,
+        messages=messages,
+        temperature=self.temperature,
+        max_tokens=self.max_tokens
+    )
+
+    # If tool calls, add results and loop
+    if response.tool_calls:
+        for tool_call in response.tool_calls:
+            result = execute_tool(tool_call)
+            messages = self.context.add_tool_result(
+                messages,
+                tool_call_id=tool_call.id,
+                tool_name=tool_call.name,
+                result=result
+            )</div>
+      </div>
+    </section>
+
+    <!-- Section 7: Code Examples -->
+    <section class="section" id="examples">
+      <div class="section-header">
+        <div class="section-num">7</div>
+        <h2>Practical Code Examples</h2>
+      </div>
+
+      <p class="section-desc">
+        Real-world examples of how to use the ContextBuilder for different scenarios.
+      </p>
+
+      <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem;">Example 1: Basic Context Building</h3>
+
+      <div class="code-block">
+        <div class="code-label">Python: Build context and make LLM call</div>
+        <div class="code-content">from pathlib import Path
+from nanobot.agent.context import ContextBuilder
+
+workspace = Path("/Users/jim.salinas/projects/nanobot")
+context = ContextBuilder(workspace)
+
+# Build system prompt (includes identity, bootstrap, memory, skills)
+system_prompt = context.build_system_prompt()
+print(f"System prompt length: {len(system_prompt)} chars")
+
+# Build complete message list
+messages = context.build_messages(
+    history=[],  # Start with no history
+    current_message="What is in the nanobot context system?"
+)
+
+# Send to LLM
+# response = provider.complete(model="claude-3-5-sonnet", messages=messages)
+</div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem;">Example 2: With Conversation History</h3>
+
+      <div class="code-block">
+        <div class="code-label">Python: Building messages with prior exchanges</div>
+        <div class="code-content">messages = context.build_messages(
+    history=[
+        {
+            "role": "user",
+            "content": "Tell me about context building"
+        },
+        {
+            "role": "assistant",
+            "content": "The ContextBuilder assembles identity, bootstrap files, memory, and skills..."
+        }
+    ],
+    current_message="Can you explain the message structure?",
+    channel="slack",
+    chat_id="C123456"
+)
+
+# Result includes:
+# 1. System prompt (built fresh)
+# 2. History (prior exchanges)
+# 3. Runtime context (timestamp, channel, chat_id)
+# 4. Current message (what the user just asked)
+</div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem;">Example 3: With Images</h3>
+
+      <div class="code-block">
+        <div class="code-label">Python: Including vision content</div>
+        <div class="code-content">messages = context.build_messages(
+    history=[],
+    current_message="What do you see in this screenshot?",
+    media=[
+        "/path/to/image.png",
+        "/path/to/screenshot.jpg"
+    ]
+)
+
+# The _build_user_content() method:
+# 1. Reads each file
+# 2. Checks if it's a valid image type
+# 3. Base64-encodes the content
+# 4. Builds an image_url block with data URI
+# 5. Appends the text message
+#
+# Result: Vision-capable models can see and analyze the images
+</div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem;">Example 4: Tool Result Handling</h3>
+
+      <div class="code-block">
+        <div class="code-label">Python: Adding tool results in a loop</div>
+        <div class="code-content"># Initial LLM call
+response = provider.complete(model="claude", messages=messages)
+
+# Agent decides to call a tool
+if response.tool_calls:
+    for tool_call in response.tool_calls:
+        # Execute the tool
+        tool_result = shell_tool.execute(tool_call.input)
+
+        # Add assistant message with tool call
+        messages = context.add_assistant_message(
+            messages,
+            content=response.content,
+            tool_calls=response.tool_calls
+        )
+
+        # Add tool result
+        messages = context.add_tool_result(
+            messages,
+            tool_call_id=tool_call.id,
+            tool_name=tool_call.name,
+            result=tool_result
+        )
+
+    # Now messages contains the tool result and agent can reason about it
+    # Continue loop for next LLM call with updated messages
+</div>
+      </div>
+
+      <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem;">Example 5: Building with Specific Skills</h3>
+
+      <div class="code-block">
+        <div class="code-label">Python: Filtering skills by name</div>
+        <div class="code-content"># Build context with only specific skills enabled
+skill_names = ["visual-explainer", "ast-grep"]
+
+system_prompt = context.build_system_prompt(skill_names=skill_names)
+# Note: In current implementation, skill_names parameter exists but
+# actual filtering would happen in build_messages()
+
+messages = context.build_messages(
+    history=[],
+    current_message="Generate a diagram for this architecture",
+    skill_names=skill_names  # Optional: filter skills in future versions
+)
+
+# The system prompt now highlights specific skills relevant to the task
+</div>
+      </div>
+
+      <div class="highlight">
+        <h4>Pro Tips</h4>
+        <ul style="list-style: none; padding: 0; font-size: 0.9rem;">
+          <li style="margin-bottom: 0.75rem;">✓ <strong>Fresh rebuild:</strong> Always rebuild the system prompt for each turn to get updated memory</li>
+          <li style="margin-bottom: 0.75rem;">✓ <strong>Message immutability:</strong> The message list grows with each tool call; don't reuse stale lists</li>
+          <li style="margin-bottom: 0.75rem;">✓ <strong>Runtime context:</strong> Injected automatically; you only need to pass current_message</li>
+          <li style="margin-bottom: 0.75rem;">✓ <strong>Memory updates:</strong> Write to MEMORY.md within tool execution; next turn sees it</li>
+          <li style="margin-bottom: 0.75rem;">✓ <strong>Bootstrap changes:</strong> Edit AGENTS.md, SOUL.md, etc.; next turn rebuilds with new content</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      <p>Nanobot Context System Explainer • Built with HTML, CSS, and Mermaid diagrams</p>
+    </footer>
+  </main>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#e0f2fe',
+        primaryBorderColor: '#0369a1',
+        primaryTextColor: '#000',
+        secondaryColor: '#d1fae5',
+        secondaryBorderColor: '#059669',
+        tertiaryColor: '#fef3c7',
+        tertiaryBorderColor: '#d97706',
+        fontSize: '16px',
+        fontFamily: 'IBM Plex Sans'
+      }
+    });
+
+    // Optional: Add zoom controls for Mermaid diagrams
+    document.querySelectorAll('.mermaid').forEach(diagram => {
+      diagram.style.cursor = 'grab';
+    });
+  </script>
+</body>
+</html>
